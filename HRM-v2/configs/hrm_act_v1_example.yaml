@@ -1,0 +1,76 @@
+# HRM-ACT-v1 Example Configuration
+
+model:
+  # Data dimensions
+  batch_size: 32
+  seq_len: 256
+  puzzle_emb_ndim: 512  # Set to 0 to disable puzzle embeddings
+  num_puzzle_identifiers: 1000
+  vocab_size: 10000
+
+  # Hierarchical reasoning cycles
+  H_cycles: 4  # High-level reasoning iterations
+  L_cycles: 3  # Low-level reasoning iterations per high cycle
+
+  # Layer configuration
+  H_layers: 4  # High-level transformer layers
+  L_layers: 4  # Low-level transformer layers
+
+  # Transformer architecture
+  hidden_size: 512
+  expansion: 2.6667  # SwiGLU expansion factor
+  num_heads: 8
+
+  # Position encodings
+  pos_encodings: "rope"  # "rope" or "learned"
+  rms_norm_eps: 1.0e-5
+  rope_theta: 10000.0
+
+  # Adaptive Computation Time (ACT) - Halting
+  halt_max_steps: 8  # Maximum reasoning steps
+  halt_exploration_prob: 0.1  # Exploration probability for Q-learning
+
+  # Precision
+  forward_dtype: "bfloat16"  # "float32", "float16", or "bfloat16"
+
+training:
+  # Optimization
+  learning_rate: 3.0e-4
+  weight_decay: 0.01
+  max_steps: 100000
+  warmup_steps: 1000
+  gradient_clip: 1.0
+
+  # Sparse embedding optimizer (separate from main model)
+  sparse_emb_lr: 1.0e-3
+  sparse_emb_weight_decay: 1.0e-2
+
+  # Mixed precision
+  use_amp: true
+
+  # Checkpointing
+  checkpoint_every: 5000
+  eval_every: 1000
+  log_every: 100
+
+data:
+  train_path: "path/to/train/data"
+  val_path: "path/to/val/data"
+  num_workers: 4
+
+optimizer:
+  name: "adamw"
+  betas: [0.9, 0.95]
+  eps: 1.0e-8
+
+scheduler:
+  name: "cosine"
+  warmup_steps: 1000
+  min_lr: 3.0e-5
+
+# Distributed training (optional)
+distributed:
+  enabled: false
+  world_size: 1
+  backend: "nccl"
+
