@@ -10,8 +10,24 @@ These results underscore HRM’s potential as a transformative advancement towar
 
 **Join our Discord Community: [https://discord.gg/sapient](https://discord.gg/sapient)**
 
+---
 
-## Quick Start Guide 🚀
+## 🆕 HRM-v2: Modern Rebuild Available!
+
+**NEW!** A complete modernized implementation is now available in the **[HRM-v2/](HRM-v2/)** directory:
+
+- ✅ **CUDA 12.8+, PyTorch 2.8+, FlashAttention 4** - Latest software stack
+- ✅ **Blackwell (RTX 5090) sm_100 optimization** - Optimized for newest GPUs
+- ✅ **Complete HRM-ACT-v1 implementation** - Fully tested and production-ready
+- ✅ **One-command setup** - Automated installation via `bash scripts/setup_uv.sh`
+- ✅ **Comprehensive documentation** - 6 detailed guides + complete test suite
+- ✅ **Modern Python packaging** - Type hints, clean imports, pyproject.toml
+
+**Get started:** See **[HRM-v2/README.md](HRM-v2/README.md)** or **[HRM-v2/QUICKSTART.md](HRM-v2/QUICKSTART.md)**
+
+---
+
+## Quick Start Guide 🚀 (Original HRM)
 
 ### Prerequisites ⚙️
 
