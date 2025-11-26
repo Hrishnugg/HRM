@@ -276,14 +276,19 @@ class HRMACTv1_Inner(nn.Module):
         """Create empty carry state."""
         seq_len = self.config.seq_len + self.puzzle_emb_len
         
+        # Use device of H_init buffer
+        device = self.H_init.device
+        
         return HRMACTv1InnerCarry(
             z_H=torch.empty(
                 batch_size, seq_len, self.config.hidden_size,
-                dtype=self.forward_dtype
+                dtype=self.forward_dtype,
+                device=device
             ),
             z_L=torch.empty(
                 batch_size, seq_len, self.config.hidden_size,
-                dtype=self.forward_dtype
+                dtype=self.forward_dtype,
+                device=device
             ),
         )
         
@@ -404,11 +409,12 @@ class HRMACTv1(nn.Module):
             Initial carry state (all sequences halted)
         """
         batch_size = batch["inputs"].shape[0]
+        device = batch["inputs"].device
 
         return HRMACTv1Carry(
             inner_carry=self.inner.empty_carry(batch_size),
-            steps=torch.zeros((batch_size,), dtype=torch.int32),
-            halted=torch.ones((batch_size,), dtype=torch.bool),  # Start halted
+            steps=torch.zeros((batch_size,), dtype=torch.int32, device=device),
+            halted=torch.ones((batch_size,), dtype=torch.bool, device=device),  # Start halted
             current_data={k: torch.empty_like(v) for k, v in batch.items()}
         )
         

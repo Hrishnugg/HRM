@@ -52,19 +52,24 @@ class CastedSparseEmbedding(nn.Module):
         )
 
         # Local weights and IDs (non-persistent, for gradient accumulation)
-        # Local embeddings with gradient enabled
-        self.register_buffer(
-            "local_weights",
-            torch.zeros(batch_size, embedding_dim, requires_grad=True),
-            persistent=False
-        )
+        # Local embeddings with gradient enabled - NOT a buffer, just an attribute with requires_grad
+        # This needs to be a leaf tensor for the optimizer to work
+        self.local_weights = torch.zeros(batch_size, embedding_dim, requires_grad=True)
         
-        # Local embedding IDs
+        # Local embedding IDs - can be a buffer since it doesn't need gradients
         self.register_buffer(
             "local_ids",
             torch.zeros(batch_size, dtype=torch.int32),
             persistent=False
         )
+    
+    def _apply(self, fn):
+        """Override _apply to handle local_weights device movement."""
+        super()._apply(fn)
+        # Move local_weights to the same device/dtype as other tensors
+        # Must detach and set requires_grad to keep it as a leaf tensor
+        self.local_weights = fn(self.local_weights).detach().requires_grad_(True)
+        return self
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
@@ -79,11 +84,13 @@ class CastedSparseEmbedding(nn.Module):
             return self.weights[inputs].to(self.cast_to)
             
         # Training mode: copy to local weights for gradient accumulation
+        # Handle variable batch sizes (last batch might be smaller)
+        actual_batch_size = inputs.shape[0]
         with torch.no_grad():
-            self.local_weights.copy_(self.weights[inputs])
-            self.local_ids.copy_(inputs)
+            self.local_weights[:actual_batch_size].copy_(self.weights[inputs])
+            self.local_ids[:actual_batch_size].copy_(inputs)
 
-        return self.local_weights.to(self.cast_to)
+        return self.local_weights[:actual_batch_size].to(self.cast_to)
 
 
 class CastedSparseEmbeddingSignSGD_Distributed(Optimizer):
@@ -145,10 +152,21 @@ class CastedSparseEmbeddingSignSGD_Distributed(Optimizer):
             assert local_ids is not None, "No local_ids found"
             assert weights is not None, "No weights found"
         
-            # Apply SignSGD with distributed all-gather
+            # Find actual batch size (handle variable batch sizes)
+            # Only process non-zero IDs (actual used embeddings)
+            actual_batch_size = (local_ids != 0).sum().item() if (local_ids != 0).any() else local_ids.shape[0]
+            # Better: find first occurrence where gradient is non-zero
+            if local_weights_grad is not None:
+                # Use gradient sparsity to determine actual batch size
+                has_grad = (local_weights_grad.abs().sum(dim=1) > 0)
+                actual_batch_size = has_grad.sum().item()
+                if actual_batch_size == 0:
+                    actual_batch_size = local_ids.shape[0]
+            
+            # Apply SignSGD with distributed all-gather (only on actual batch)
             _sparse_emb_signsgd_dist(
-                local_weights_grad,
-                local_ids,
+                local_weights_grad[:actual_batch_size],
+                local_ids[:actual_batch_size],
                 weights,
                 lr=group["lr"],
                 weight_decay=group["weight_decay"],

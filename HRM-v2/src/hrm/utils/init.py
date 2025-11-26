@@ -45,7 +45,7 @@ def trunc_normal_init_(
 
             c = (2 * math.pi) ** -0.5
             pdf_u = c * math.exp(-0.5 * lower ** 2)
-            pdf_l = c * math.exp(-0.5 * lower ** 2)
+            pdf_l = c * math.exp(-0.5 * upper ** 2)
             comp_std = std / math.sqrt(1 - (upper * pdf_u - lower * pdf_l) / z - ((pdf_u - pdf_l) / z) ** 2)
 
             tensor.uniform_(a, b)
