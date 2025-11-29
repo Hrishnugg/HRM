@@ -1,11 +1,34 @@
+# Core ML
 torch
 adam-atan2
 einops
 tqdm
-coolname
 pydantic
 argdantic
+
+# Config and logging
 wandb
 omegaconf
 hydra-core
+coolname
+
+# Data
 huggingface_hub
+numpy
+
+# RL Environment
+gymnasium>=0.29.0
+stable-baselines3>=2.0.0
+shimmy>=1.0.0
+
+# Visualization
+matplotlib>=3.7.0
+
+# HTTP requests (for downloading benchmark maps)
+requests
+
+# Logging and monitoring
+tensorboard>=2.14.0
+
+# Modal (for cloud training)
+modal>=0.60.0

@@ -1,0 +1,156 @@
+# HRM-Augmented A* RL Training Configuration
+# ===========================================
+
+# Environment settings
+environment:
+  # Map configuration
+  map_name: null  # Use null for random maps, or "Berlin_0_256" for benchmark
+  map_size: 32
+  obstacle_density: 0.15
+  
+  # Dynamic obstacles
+  num_obstacles: 5
+  obstacle_speed_range: [0.5, 2.0]
+  obstacle_type_weights:
+    linear: 0.4
+    patrol: 0.2
+    circular: 0.15
+    oscillating: 0.1
+    intelligent: 0.15
+  
+  # History for prediction
+  history_length: 10
+  
+  # Agent movement
+  eight_connected: true
+  
+  # Episode settings
+  max_steps: 500
+
+# Reward configuration
+rewards:
+  step_penalty: -0.01
+  collision_penalty: -1.0
+  goal_reward: 10.0
+  distance_reward_scale: 0.1
+  near_miss_penalty: -0.1
+  near_miss_threshold: 1.5
+  
+  # Prediction-based rewards
+  prediction_reward_weight: 0.1
+  safety_reward_weight: 0.2
+
+# Training settings
+training:
+  # Algorithm: "PPO" or "SAC"
+  algorithm: "PPO"
+  
+  # Total training timesteps
+  total_timesteps: 1_000_000
+  
+  # Learning rate
+  learning_rate: 3e-4
+  
+  # PPO-specific settings
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  clip_range: 0.2
+  
+  # Discount factor
+  gamma: 0.99
+  gae_lambda: 0.95
+  
+  # Entropy coefficient
+  ent_coef: 0.01
+  
+  # Parallelization
+  n_envs: 8
+
+# Curriculum learning
+curriculum:
+  enabled: true
+  stages:
+    - obstacles: 3
+      speed_range: [0.3, 0.8]
+      type_weights: {linear: 0.8, patrol: 0.2}
+      steps: 100_000
+    
+    - obstacles: 5
+      speed_range: [0.5, 1.2]
+      type_weights: {linear: 0.6, patrol: 0.25, circular: 0.15}
+      steps: 200_000
+    
+    - obstacles: 7
+      speed_range: [0.7, 1.5]
+      type_weights: {linear: 0.4, patrol: 0.3, circular: 0.2, oscillating: 0.1}
+      steps: 300_000
+    
+    - obstacles: 10
+      speed_range: [1.0, 2.0]
+      type_weights: {linear: 0.3, patrol: 0.25, circular: 0.2, oscillating: 0.1, intelligent: 0.15}
+      steps: 400_000
+
+# HRM Predictor settings
+predictor:
+  hidden_size: 128
+  history_length: 10
+  prediction_horizon: 5
+  
+  # Kalman filter weight (0 = pure HRM, 1 = pure Kalman)
+  kalman_weight: 0.3
+
+# A* Planner settings
+planner:
+  # Heuristic weight (>1 for weighted A*)
+  heuristic_weight: 1.0
+  
+  # Risk penalty weight
+  risk_weight: 1.0
+  
+  # Collision risk settings
+  influence_radius: 3.0
+  max_penalty: 10.0
+  safety_margin: 1.5
+  
+  # Replanning
+  replan_interval: 5
+  replan_risk_threshold: 5.0
+  
+  # Path smoothing
+  smooth_path: true
+  smoothing_iterations: 3
+
+# Feature extractor
+feature_extractor:
+  features_dim: 256
+  use_hrm_encoder: true
+
+# Evaluation
+evaluation:
+  eval_freq: 10_000
+  n_eval_episodes: 20
+  
+  # Metrics to track
+  metrics:
+    - path_efficiency
+    - path_smoothness
+    - safety_margin
+    - prediction_accuracy
+    - computation_time
+
+# Logging and checkpoints
+logging:
+  log_dir: "logs/hrm_astar"
+  checkpoint_dir: "checkpoints/hrm_astar"
+  save_freq: 50_000
+  
+  # Weights & Biases
+  use_wandb: false
+  wandb_project: "hrm-astar-rl"
+  wandb_run_name: null
+
+# Reproducibility
+seed: 42
+device: "auto"  # "auto", "cuda", or "cpu"
+
