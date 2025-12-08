@@ -54,7 +54,7 @@ class HRMACTv1Config(BaseModel):
 
     # Transformer architecture
     hidden_size: int
-    expansion: float = 2.6667  # FFN expansion factor
+    expansion: float = 4.0  # FFN expansion factor (matches original HRM)
     num_heads: int
     pos_encodings: str = "rope"  # "rope" or "learned"
 

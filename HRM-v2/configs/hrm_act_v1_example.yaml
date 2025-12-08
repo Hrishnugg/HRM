@@ -18,7 +18,7 @@ model:
 
   # Transformer architecture
   hidden_size: 512
-  expansion: 2.6667  # SwiGLU expansion factor
+  expansion: 4.0  # SwiGLU expansion factor (matches original HRM)
   num_heads: 8
 
   # Position encodings

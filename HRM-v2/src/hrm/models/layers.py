@@ -200,7 +200,7 @@ class SwiGLU(nn.Module):
     Combines SiLU (Swish) activation with gating mechanism.
     """
     
-    def __init__(self, hidden_size: int, expansion: float = 2.6667):
+    def __init__(self, hidden_size: int, expansion: float = 4.0):
         """
         Args:
             hidden_size: Hidden dimension
@@ -235,7 +235,7 @@ class HRMTransformerBlock(nn.Module):
         self,
         hidden_size: int,
         num_heads: int,
-        expansion: float = 2.6667,
+        expansion: float = 4.0,
         rms_norm_eps: float = 1e-5,
         causal: bool = False,
         use_flash: bool = True,
